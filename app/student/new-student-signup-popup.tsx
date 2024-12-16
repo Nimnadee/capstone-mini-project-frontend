@@ -197,7 +197,7 @@ export default function NewStudentSignupPopup({ onSave }) {
                           <div>
                           <Button color="danger" variant="light" onPress={onClose} className="absolute top-4 right-4"> <FaTimes /></Button>
                           </div>
-                          <div className="relative pb-5">
+                          <div className="absolute bottom-5">
                             <Button color="primary" type="submit"  onPress={onSubmit}>
                               Create Account
                             </Button>
