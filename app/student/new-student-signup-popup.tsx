@@ -99,8 +99,8 @@ export default function NewStudentSignupPopup({ onSave }) {
         <Modal className={"p-0 m-0 max-w-6xl h-4/5"} isOpen={isOpen} onOpenChange={onOpenChange}>
           <ModalContent className={"fixed-size pt-0"}>{(onClose) => (
             <>
-              <div className={"flex flex-col h-full"}>
-                <div className={"h-full"}>
+              <div className={" flex flex-col h-full"}>
+                <div className={"h-full  "}>
                   <ModalBody className={"h-full p-0 m-0"}>
                     <div className={"flex flex-row h-full"}>
                       <div className="container basis-2/5 border-r-1 pr-10 pt-20 pl-8 h-full flex flex-col justify-between"
@@ -123,7 +123,7 @@ export default function NewStudentSignupPopup({ onSave }) {
                       </div>
 
                       <div className={"basis-3/5 h-full flex flex-col justify-between bg-gradient-to-br from-gray-800 via-black to-gray-900 backdrop-blur-lg bg-opacity-10"}>
-                        <div className="w-full flex flex-row gap-2 justify-center pt-10 pb-5 mt-20 text-gray-400 text-xm">
+                        <div className="w-full flex flex-row gap-2 justify-center pt-0 pb-5 mt-20 text-gray-400 text-xm">
                           <p>Do you already have an account?</p>
                           <Link href="#" underline="always" onClick={handleLoginClick}>Login</Link>
                         </div>
@@ -188,7 +188,7 @@ export default function NewStudentSignupPopup({ onSave }) {
                         </div>
                         <div className="h-10 flex items-center justify-center">
                           {error && (
-                            <p className="text-red-400 rounded-lg p-1 text-xs max-w-80 h-8 flex items-center justify-center">
+                            <p className="text-red-400 rounded-lg p-0 text-xs max-w-80 h-8 flex items-center justify-center">
                               {error}
                             </p>
                           )}
@@ -197,7 +197,7 @@ export default function NewStudentSignupPopup({ onSave }) {
                           <div>
                           <Button color="danger" variant="light" onPress={onClose} className="absolute top-4 right-4"> <FaTimes /></Button>
                           </div>
-                          <div>
+                          <div className="relative pb-5">
                             <Button color="primary" type="submit"  onPress={onSubmit}>
                               Create Account
                             </Button>
