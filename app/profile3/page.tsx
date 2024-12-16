@@ -123,8 +123,8 @@ export default function Resume () {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (formData && id) {
-            const updatedGuide = { ...guide, ...formData, id } as Guide;
+        if (formData && guideId) {
+            const updatedGuide = { ...guide, ...formData, guideId } as Guide;
             try {
                 const response = await updateGuide(updatedGuide);
                 setGuide(response);
