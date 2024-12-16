@@ -66,11 +66,11 @@ const ContactUs: React.FC = () => {
     <h1 className="text-4xl font-bold text-white mb-6">Contact Information</h1>
     <div className="mb-6">
       <h2 className="text-2xl font-medium text-white">Location</h2>
-      <p className="text-gray-400">123 Main Street, Anytown, USA</p>
+      <p className="text-gray-400">Sabaragamuwa University of Sri Lanka</p>
     </div>
     <div className="mb-6">
       <h2 className="text-2xl font-medium text-white">Phone</h2>
-      <p className="text-gray-400">(123) 456-7890</p>
+      <p className="text-gray-400">+94 704951724</p>
     </div>
     <div>
       <h2 className="text-2xl font-medium text-white">Follow Us</h2>
