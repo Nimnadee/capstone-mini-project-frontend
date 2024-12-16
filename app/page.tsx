@@ -49,7 +49,7 @@ export default function Home() {
                <br />
               <h1 className={title()}>Software Development Skills</h1>
                <br />
-              <h1 className={title()}>with<span className={title({ color: "violet" })}>Guidly</span>
+              <h1 className={title()}>with <span className={title({ color: "violet" })}>Guidely!!!</span>
               </h1>
               <br />
             <TypeWrite/>
