@@ -27,7 +27,7 @@ export default function Nav() {
           />
           <span className="text-white text-2xl font-semibold tracking-wide">Guidely</span>
         </div>
-        <div className="flex space-x-6 font-semibold " style={{ paddingRight: '130px' }}>
+        <div className="flex space-x-6 font-semibold " style={{ paddingRight: '230px' }}>
         <a href="/" className="text-white hover:text-yellow-400 text-xl transition duration-300 ease-in-out transform hover:scale-105">
                 Home
           </a>
