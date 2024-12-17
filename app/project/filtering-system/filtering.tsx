@@ -7,7 +7,7 @@ import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
 import { getAllMatchingGuide } from "@/service/guide.service";
 import { useMultiStepContext } from "@/app/step-context";
 import { Button } from "@nextui-org/react";
-import Rating from '@mui/material/Rating';  
+import Rating from '@mui/material/Rating';
 import { useRouter } from 'next/navigation';
 import { createRequest, deleteRequest } from "@/service/project.request.service";
 import emailjs from 'emailjs-com';
@@ -21,6 +21,23 @@ export default function Filtering() {
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
     const router = useRouter();
     const [requestedGuides, setRequestedGuides] = useState(new Map());
+    const [storedProjectResponse, setStoredProjectResponse] = useState(null);
+
+    // Save projectResponse to localStorage when it updates
+    useEffect(() => {
+        if (projectResponse?.id) {
+            localStorage.setItem('projectResponse', JSON.stringify(projectResponse));
+            setStoredProjectResponse(projectResponse);
+        }
+    }, [projectResponse]);
+
+    // Load projectResponse from localStorage on component mount
+    useEffect(() => {
+        const savedResponse = localStorage.getItem('projectResponse');
+        if (savedResponse) {
+            setStoredProjectResponse(JSON.parse(savedResponse));
+        }
+    }, []);
 
     const handleViewGuide = (params) => {
         const guideId = params.row.id;
@@ -33,7 +50,6 @@ export default function Filtering() {
         const requestId = requestedGuides.get(guideId);
 
         if (requestId) {
-            // If the guide is already requested, delete the request
             try {
                 await deleteRequest(requestId);
                 setRequestedGuides((prev) => {
@@ -50,49 +66,74 @@ export default function Filtering() {
                 setSnackbarOpen(true);
             }
         } else {
-            // If the guide is not requested, create the request
             try {
+                // Make the request
                 const res = await createRequest({
                     guideId: guideId,
-                    projectId: projectResponse.id,
+                    projectId: storedProjectResponse.id,
                     status: "pending",
                 });
+
+                // Log the API response to debug
+                console.log("API Response from createRequest:", res);
+
+                // Set the requested guides
                 setRequestedGuides((prev) => {
                     const newMap = new Map(prev);
                     newMap.set(guideId, res.id);
                     return newMap;
                 });
 
-                // Send the email (same as before)
+                // Destructure required fields from the response
                 const { guideEmail, studentEmail, projectTitle, projectSummary } = res;
 
-                emailjs.send(
-                    process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-                    process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
-                    {
-                        to_email: guideEmail,
-                        from_email: studentEmail,
-                        message: `
+                // Debugging log to verify values
+                console.log("Email data being sent:", {
+                    to_email: guideEmail,
+                    from_email: studentEmail,
+                    projectTitle,
+                    projectSummary,
+                });
+
+                // Check if guideEmail exists
+                if (!guideEmail) {
+                    console.error("Guide email is missing. Email cannot be sent.");
+                    setSnackbarMessage('Failed to send request: Guide email is missing.');
+                    setSnackbarSeverity('error');
+                    setSnackbarOpen(true);
+                    return;
+                }
+
+                // Send the email using EmailJS
+                emailjs
+                    .send(
+                        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+                        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+                        {
+                            to_email: guideEmail, // Dynamically set guide email
+                            from_email: studentEmail,
+                            message: `
                             Dear Guide,
                             You have a new project request from ${studentEmail}. Please review the details below:
                             Project Title: ${projectTitle}
                             Project Summary: ${projectSummary}
                             Best regards, Guidely Team
                         `,
-                    },
-                    process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
-                ).then((response) => {
-                    console.log('SUCCESS!', response.status, response.text);
-                    setSnackbarMessage('Request sent successfully! Thank you for using our service.');
-                    setSnackbarSeverity('success');
-                    setSnackbarOpen(true);
-                }).catch((err) => {
-                    console.error('FAILED...', err);
-                    setSnackbarMessage('Failed to send request. Please try again.');
-                    setSnackbarSeverity('error');
-                    setSnackbarOpen(true);
-                });
-
+                        },
+                        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
+                    )
+                    .then((response) => {
+                        console.log("EmailJS Success:", response.status, response.text);
+                        setSnackbarMessage('Request sent successfully! Thank you for using our service.');
+                        setSnackbarSeverity('success');
+                        setSnackbarOpen(true);
+                    })
+                    .catch((err) => {
+                        console.error("EmailJS Error:", err);
+                        setSnackbarMessage('Failed to send request. Please try again.');
+                        setSnackbarSeverity('error');
+                        setSnackbarOpen(true);
+                    });
             } catch (error) {
                 console.error("Error in handleRequestGuide (create):", error);
                 setSnackbarMessage('Failed to send request. Please try again.');
@@ -101,6 +142,7 @@ export default function Filtering() {
             }
         }
     };
+
 
     const columns: GridColDef[] = [
         {
@@ -163,42 +205,41 @@ export default function Filtering() {
     ];
 
     useEffect(() => {
-        if (projectResponse?.id) {
-            getAllMatchingGuide(projectResponse.id.toString()).then((res) => {
+        if (storedProjectResponse?.id) {
+            getAllMatchingGuide(storedProjectResponse.id.toString()).then((res) => {
                 setRows(res);
             });
         }
-    }, [projectResponse]);
+    }, [storedProjectResponse]);
 
     return (
-         <>
-         <div className='absolute inset-x-0'>
-         <Newnav/>
-         </div> 
-        <Box sx={{ height: '100%', width: '100%', marginTop:'40px' }} >
-            <DataGrid
-                rowHeight={60}
-                rows={rows}
-                columns={columns}
-                pageSizeOptions={[5, 10, 20]}
-                disableRowSelectionOnClick
-                disableColumnSelector
-                slots={{
-                    toolbar: GridToolbar,
-                }}
-            />
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={6000}
-                onClose={() => setSnackbarOpen(false)}
-                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}  // Updated position
-            >
-                <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity}>
-                    {snackbarMessage}
-                </Alert>
-            </Snackbar>
-        </Box>
-      
+        <>
+            <div className='absolute inset-x-0'>
+                <Newnav />
+            </div>
+            <Box sx={{ height: '100%', width: '100%', marginTop: '40px' }} >
+                <DataGrid
+                    rowHeight={60}
+                    rows={rows}
+                    columns={columns}
+                    pageSizeOptions={[5, 10, 20]}
+                    disableRowSelectionOnClick
+                    disableColumnSelector
+                    slots={{
+                        toolbar: GridToolbar,
+                    }}
+                />
+                <Snackbar
+                    open={snackbarOpen}
+                    autoHideDuration={6000}
+                    onClose={() => setSnackbarOpen(false)}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'center' }}  // Updated position
+                >
+                    <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity}>
+                        {snackbarMessage}
+                    </Alert>
+                </Snackbar>
+            </Box>
         </>
     );
 }
